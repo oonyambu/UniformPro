@@ -135,6 +135,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// phi_smallest
+Rcpp::IntegerVector phi_smallest(const Rcpp::NumericMatrix& x, int k);
+RcppExport SEXP _UniformPro_phi_smallest(SEXP xSEXP, SEXP kSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    rcpp_result_gen = Rcpp::wrap(phi_smallest(x, k));
+    return rcpp_result_gen;
+END_RCPP
+}
 // phi2D
 double phi2D(const Rcpp::NumericMatrix& x, int s);
 RcppExport SEXP _UniformPro_phi2D(SEXP xSEXP, SEXP sSEXP) {
@@ -148,13 +160,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // phiEff
-double phiEff(const Rcpp::NumericMatrix& x);
-RcppExport SEXP _UniformPro_phiEff(SEXP xSEXP) {
+double phiEff(const Rcpp::NumericMatrix& x, int k);
+RcppExport SEXP _UniformPro_phiEff(SEXP xSEXP, SEXP kSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(phiEff(x));
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    rcpp_result_gen = Rcpp::wrap(phiEff(x, k));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -229,8 +242,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_UniformPro_phi", (DL_FUNC) &_UniformPro_phi, 2},
     {"_UniformPro_phi2", (DL_FUNC) &_UniformPro_phi2, 2},
     {"_UniformPro_phi3", (DL_FUNC) &_UniformPro_phi3, 2},
+    {"_UniformPro_phi_smallest", (DL_FUNC) &_UniformPro_phi_smallest, 2},
     {"_UniformPro_phi2D", (DL_FUNC) &_UniformPro_phi2D, 2},
-    {"_UniformPro_phiEff", (DL_FUNC) &_UniformPro_phiEff, 1},
+    {"_UniformPro_phiEff", (DL_FUNC) &_UniformPro_phiEff, 2},
     {"_UniformPro_psi", (DL_FUNC) &_UniformPro_psi, 1},
     {"_UniformPro_psi2", (DL_FUNC) &_UniformPro_psi2, 1},
     {"_UniformPro_Db", (DL_FUNC) &_UniformPro_Db, 2},

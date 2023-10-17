@@ -109,6 +109,15 @@ phi3 <- function(x, k = 2L) {
     .Call(`_UniformPro_phi3`, x, k)
 }
 
+#' eturn the design with smallest phi among those projected into K dimensions
+#' @name phi_smallest
+#' @param x the design matrix d
+#' @param k the number of dimensions to be projected onto.
+#' @export
+phi_smallest <- function(x, k = 2L) {
+    .Call(`_UniformPro_phi_smallest`, x, k)
+}
+
 #' Compute phi value for design D . Check equation 3.1 Uniform Projection
 #' Designs paper
 #' 
@@ -126,8 +135,8 @@ phi2D <- function(x, s = 0L) {
 #' @name phi efficiency
 #' @param x Design matrix x
 #' @export
-phiEff <- function(x) {
-    .Call(`_UniformPro_phiEff`, x)
+phiEff <- function(x, k = 2L) {
+    .Call(`_UniformPro_phiEff`, x, k)
 }
 
 #' Computes psi -- combn fn

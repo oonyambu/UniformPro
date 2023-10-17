@@ -5,7 +5,7 @@
 \alias{phiEff}
 \title{Computes the phi efficiency.}
 \usage{
-phiEff(x)
+phiEff(x, k = 2L)
 }
 \arguments{
 \item{x}{Design matrix x}
