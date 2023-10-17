@@ -10,16 +10,6 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// rcpp_hello_world
-List rcpp_hello_world();
-RcppExport SEXP _UniformPro_rcpp_hello_world() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(rcpp_hello_world());
-    return rcpp_result_gen;
-END_RCPP
-}
 // WilliamC
 Rcpp::NumericMatrix WilliamC(const Rcpp::NumericMatrix& x);
 RcppExport SEXP _UniformPro_WilliamC(SEXP xSEXP) {
@@ -98,14 +88,14 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// construct1
-Rcpp::NumericMatrix construct1(int n);
-RcppExport SEXP _UniformPro_construct1(SEXP nSEXP) {
+// construct
+Rcpp::NumericMatrix construct(int n);
+RcppExport SEXP _UniformPro_construct(SEXP nSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(construct1(n));
+    rcpp_result_gen = Rcpp::wrap(construct(n));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -192,7 +182,6 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_UniformPro_rcpp_hello_world", (DL_FUNC) &_UniformPro_rcpp_hello_world, 0},
     {"_UniformPro_WilliamC", (DL_FUNC) &_UniformPro_WilliamC, 1},
     {"_UniformPro_William", (DL_FUNC) &_UniformPro_William, 1},
     {"_UniformPro_WilliamInv", (DL_FUNC) &_UniformPro_WilliamInv, 2},
@@ -200,7 +189,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_UniformPro_rho_ave", (DL_FUNC) &_UniformPro_rho_ave, 1},
     {"_UniformPro_CD", (DL_FUNC) &_UniformPro_CD, 1},
     {"_UniformPro_CD2", (DL_FUNC) &_UniformPro_CD2, 1},
-    {"_UniformPro_construct1", (DL_FUNC) &_UniformPro_construct1, 1},
+    {"_UniformPro_construct", (DL_FUNC) &_UniformPro_construct, 1},
     {"_UniformPro_phi", (DL_FUNC) &_UniformPro_phi, 2},
     {"_UniformPro_phi2", (DL_FUNC) &_UniformPro_phi2, 2},
     {"_UniformPro_phi3", (DL_FUNC) &_UniformPro_phi3, 2},

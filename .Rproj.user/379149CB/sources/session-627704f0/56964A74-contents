@@ -1,7 +1,10 @@
 #include <Rcpp.h>
 
 
+//' @useDynLib UniformPro, .registration=TRUE
 
+//'	@exportPattern "^[[:alpha:]]+"
+	
 
 
 
@@ -235,12 +238,12 @@ void C_construct(int n, double * out){
 
 //' Construct N x (N - 1) good lattice points
 //'
-//' @name construct1
+//' @name construct
 //' @param n Number of rows for the final design. SHOULD BE PRIME
 //' @return design d with n rows, n levels, n - 1 columns
 //' @export
 //[[Rcpp::export]]
-Rcpp::NumericMatrix construct1(int n){
+Rcpp::NumericMatrix construct(int n){
 	if(!is_prime(n))Rcpp::stop("n is not a prime number");
 	Rcpp::NumericMatrix out(n, n-1);
 	for(int i = 1; i <= n; i++)
