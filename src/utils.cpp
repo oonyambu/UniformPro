@@ -393,7 +393,45 @@ double phi3(const Rcpp::NumericMatrix &x, int k = 2){
   return out/R::choose(n, k);
 }
 
+//' eturn the design with smallest phi among those projected into K dimensions
+//' @name phi_smallest
+//' @param x the design matrix d
+//' @param k the number of dimensions to be projected onto.
+//' @export
+// [[Rcpp::export]]
 
+Rcpp::IntegerVector phi_smallest(const Rcpp::NumericMatrix &x, int k = 2){
+	int n = x.ncol();
+	int e = 0,  h = k;
+	Rcpp::IntegerVector a = Rcpp::seq_len(k);
+	double out = CD(get_cols(x, a-1));
+	Rcpp::IntegerVector results = Rcpp::clone(a);
+	
+	if (k > 0){
+		int i = 2;
+		int nmmp1 = n - k + 1;
+		while (a[0] != nmmp1){
+			if (e < n - h){
+				h = 1;
+				e = a[k - 1] ;
+				a[k - h] = e + 1;
+			}
+			else{
+				e = a[k - h - 1] ;
+				h += 1;
+				for (int j = 1; j <=h;j++) a[k - h + j-1] = e + j;
+			}
+			double res =  CD(get_cols(x, a-1));
+			if (out > res) {
+				out = res;
+				results = clone(a);
+			}
+			
+			i += 1;
+		}
+	}
+	return results;
+}
 
 
 //' Compute phi value for design D . Check equation 3.1 Uniform Projection
@@ -440,14 +478,14 @@ double phi2D(const Rcpp::NumericMatrix &x, int s = 0){
 //' @param x Design matrix x
 //' @export
 // [[Rcpp::export]]
-double phiEff(const Rcpp::NumericMatrix &x){
+double phiEff(const Rcpp::NumericMatrix &x, int k = 2){
   int n  = x.nrow(), m = x.ncol();
   int s  =  n;
   double LB_num = 5*m*(4*pow(s,4)+2*(13*n-17)*pow(s,2)-n-5) -
     (n-1)*(8*pow(s,4)+150*pow(s,2)-33);
   double LB =  LB_num/(720*(m-1)*(n-1)*pow(s,4)) +
                        (1 + pow(-1,s))/(64*pow(s,4));
-  return LB/phi2D(x, s);
+  return LB/(k > 2 ? phi(x, k) : phi2D(x, s));
 }
 
 //' Computes psi -- combn fn
@@ -481,6 +519,9 @@ double psi2(const Rcpp::NumericMatrix x){
   }
   return pow(2*sum/(NROW*(NROW-1)), 1.0/x.ncol());
 }
+
+
+
 
 //' Computes Design + b (mod) 2
 //'	@name Db
