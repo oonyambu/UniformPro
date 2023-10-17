@@ -98,14 +98,14 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// construct
-Rcpp::NumericMatrix construct(int n);
-RcppExport SEXP _UniformPro_construct(SEXP nSEXP) {
+// construct1
+Rcpp::NumericMatrix construct1(int n);
+RcppExport SEXP _UniformPro_construct1(SEXP nSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(construct(n));
+    rcpp_result_gen = Rcpp::wrap(construct1(n));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -200,7 +200,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_UniformPro_rho_ave", (DL_FUNC) &_UniformPro_rho_ave, 1},
     {"_UniformPro_CD", (DL_FUNC) &_UniformPro_CD, 1},
     {"_UniformPro_CD2", (DL_FUNC) &_UniformPro_CD2, 1},
-    {"_UniformPro_construct", (DL_FUNC) &_UniformPro_construct, 1},
+    {"_UniformPro_construct1", (DL_FUNC) &_UniformPro_construct1, 1},
     {"_UniformPro_phi", (DL_FUNC) &_UniformPro_phi, 2},
     {"_UniformPro_phi2", (DL_FUNC) &_UniformPro_phi2, 2},
     {"_UniformPro_phi3", (DL_FUNC) &_UniformPro_phi3, 2},

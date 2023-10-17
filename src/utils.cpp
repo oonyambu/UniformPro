@@ -3,11 +3,7 @@
 
 
 
-void C_construct(int n, double * out){
-	for(int i = 1; i <= n; i++)
-		for(int j = 1; j<n; j++, out++)
-			*out = i*j % n;
-};
+
 
 void C_William(const double * x, int size, int max, double * out){
   for(int i = 0;i<size; i++, x++, out++){
@@ -231,25 +227,25 @@ double CD2(const Rcpp::NumericMatrix &x){
 }
 
 
-
+void C_construct(int n, double * out){
+	for(int i = 1; i <= n; i++)
+		for(int j = 1; j<n; j++, out++)
+			*out = i*j % n;
+};
 
 //' Construct N x (N - 1) good lattice points
 //'
-//' @name construct
+//' @name construct1
 //' @param n Number of rows for the final design. SHOULD BE PRIME
 //' @return design d with n rows, n levels, n - 1 columns
 //' @export
-//' @examples
-//' UniformPro::construct(7) 
-//' UniformPro::construct(13)
 //[[Rcpp::export]]
-
-Rcpp::NumericMatrix construct(int n){
+Rcpp::NumericMatrix construct1(int n){
 	if(!is_prime(n))Rcpp::stop("n is not a prime number");
-	Rcpp::NumericMatrix out(n, n+1);
+	Rcpp::NumericMatrix out(n, n-1);
 	for(int i = 1; i <= n; i++)
 		for(int j = 1; j<n; j++)
-			out(i, j) = i*j % n;
+			out(i-1, j-1) = (i*j) % n;
 	return out;
 }
 
@@ -407,8 +403,6 @@ double phi3(const Rcpp::NumericMatrix &x, int k){
 //' @param x input design D
 //' @param s The level for the design matrix D
 //' @export
-//' @examples
-//' Uni::phi2D(construct(7), 7);
 // [[Rcpp::export]]
 double phi2D(const Rcpp::NumericMatrix &x, int s){
   int NROW = x.nrow();

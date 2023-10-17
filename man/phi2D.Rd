@@ -15,6 +15,3 @@ phi2D(x, s)
 \description{
 Assumes we are only interested in 2d projection
 }
-\examples{
-Uni::phi2D(construct(7), 7);
-}
