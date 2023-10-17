@@ -5,7 +5,7 @@
 \title{Compute phi value for design D . Check equation 3.1 Uniform Projection
 Designs paper}
 \usage{
-phi2D(x, s)
+phi2D(x, s = 0L)
 }
 \arguments{
 \item{x}{input design D}

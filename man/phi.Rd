@@ -5,7 +5,7 @@
 \title{Compute phi value for design D . Check equation 3.1 Uniform Projection
 Designs paper combn + mean.}
 \usage{
-phi(x, k)
+phi(x, k = 2L)
 }
 \arguments{
 \item{x}{input design D}

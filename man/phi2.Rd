@@ -4,7 +4,7 @@
 \alias{phi2}
 \title{Used Combn + reduce function.}
 \usage{
-phi2(x, k)
+phi2(x, k = 2L)
 }
 \arguments{
 \item{x}{the design matrix x}

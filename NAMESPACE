@@ -2,6 +2,9 @@
 
 export(CD)
 export(CD2)
+export(Db)
+export(Eb)
+export(Eb2)
 export(William)
 export(WilliamC)
 export(WilliamInv)

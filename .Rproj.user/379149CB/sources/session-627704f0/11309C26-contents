@@ -1,0 +1,526 @@
+#include <Rcpp.h>
+
+
+//' @useDynLib UniformPro, .registration=TRUE
+
+//'	@exportPattern "^[[:alpha:]]+"
+	
+
+
+
+void C_William(const double * x, int size, int max, double * out){
+  for(int i = 0;i<size; i++, x++, out++){
+    double I = (0 <= *x) & (*x < (double)max/2);
+    *out = 2**x*(2*I - 1) + (2*max - 1)*(1 - I);
+  }
+}
+
+void C_WilliamInv(const double *x, int size, int max, double *out){
+  for(int i = 0; i<size; i++, x++, out++){
+    double I = (int)*x % 2 == 0;
+    *out = (*x - (2*max - 1)*(1 - I))/(4*I - 2);
+  }
+}
+
+//' William transformation using C-->C++
+//' @param x The Design matrix x
+//' @name WilliamC
+//' @export
+//' @import Rcpp
+// [[Rcpp::export]]
+Rcpp::NumericMatrix WilliamC(const Rcpp::NumericMatrix &x){
+  int NROW = x.nrow(), NCOL = x.ncol();
+  Rcpp::NumericMatrix y(NROW, NCOL);
+  C_William(x.begin(), x.size(), NROW, y.begin());
+  return y;
+}
+
+//' William transformation 
+//' @param x The Design matrix x
+//' @name WilliamCpp
+//' @export
+// [[Rcpp::export]]
+Rcpp::IntegerVector William(const Rcpp::IntegerMatrix &x){
+    int levels = x.nrow();
+    Rcpp::IntegerVector result (x.begin(), x.end(),
+                              [=](double a){
+                                double I =  (0 <= a) & (a < (double)levels/2);
+                                return 2*a*(2*I - 1) + (2*levels - 1)*(1 - I);});
+  result.attr("dim") = Rcpp::Dimension(levels, x.length()/levels);
+  return result;
+}
+
+//' Inverse William transformation
+//' @param x The Design matrix x
+//' @param levels The number of levels in the design
+//' @name WilliamInv
+//' @export
+// [[Rcpp::export]]
+Rcpp::IntegerVector WilliamInv(const Rcpp::IntegerVector &x, int levels){
+  Rcpp::IntegerVector result(x.begin(), x.end(),
+                             [=](int a){
+                               bool I = a % 2 == 0;
+                               return (a - (2*levels - 1)* (1 - I))/(4*I-2);});
+  result.attr("dim") = Rcpp::Dimension(levels, x.length()/levels);
+  return result;
+
+}
+
+bool is_prime(int x) {
+  if (x < 4)  return x > 1;
+  if (x % 2 == 0 || x % 3 == 0)   return false;
+  for (int i = 5, stop = pow((double)x, 0.5); i <= stop; i += 6){
+    if (x % i == 0 || x % (i + 2) == 0)
+      return false;
+  }
+    return true;
+}
+
+///#################################################
+
+
+double C_d2(const double * x, int NROW, int NCOL){
+  double min = INFINITY;
+  for (int i = 0; i < (NROW - 1); i++, x+= NCOL){
+    for (int j = 1; j < (NROW - i); j++){
+      double y = 0;
+      for (int k = 0; k < NCOL; k++){
+        double a = x[k] -  x[j*NCOL + k];
+        y += a * a;
+      }
+      min = min > y? y:min;
+    }
+
+  }
+  return pow(min,0.5);
+}
+
+//' The L2 distance of design matrix x. min{d_p(x_i,x_j), 1<=i<j<=n}
+//' equation 2.1
+//' @param x The Design matrix x
+//' @name d2
+//' @export
+// [[Rcpp::export]]
+double d2(const Rcpp::NumericMatrix &x){
+  int NROW = x.nrow();
+  double min = INFINITY;
+  for (int i = 0; i < (NROW - 1); i++){
+    for (int j = i+1; j < NROW; j++){
+      Rcpp::NumericVector a = x.row(i) - x.row(j);
+      double y = sum(a * a);
+      min = min > y? y:min;
+    }
+  }
+  return std::sqrt(min);
+}
+
+//' average of the absolute correlations between columns
+//' Design is orthogonal if rho_ave(D) == 0
+//' @name rho_ave
+//' @param x The design matrix D
+//' @export
+// [[Rcpp::export]]
+double rho_ave(const Rcpp::NumericMatrix &x){
+  int NCOL = x.ncol(), NROW = x.nrow();
+  double mean = (double)NROW*0.5 - 0.5;
+  double n = mean - 0.5;
+  double var =  (n + 1) * (2*n + 1) * (2*n + 3) / 6;
+
+  double sum_cor = 0;
+  for (int i = 0; i < (NCOL - 1); i++)
+    for(int j = i+1; j < NCOL; j++)
+      sum_cor += fabs(Rcpp::sum((x.column(i) - mean)*(x.column(j) - mean)));
+  return 2 * sum_cor/(var*(NCOL-1)*NCOL);
+};
+
+//' Centered L2 discrepancy -- Equation 2.3
+//' @param y Input Design Matrix
+//' @name CD
+//' @export
+// [[Rcpp::export]]
+double CD(const Rcpp::NumericMatrix &y){
+  int NROW = y.nrow(), NCOL = y.ncol();
+  Rcpp::NumericMatrix x(NROW, NCOL);
+
+  double N = 0.5/NROW - 0.5;
+  double first_term = 0, second_term = 0;
+  for (int i = 0; i < NROW; i++){
+    double second=0;
+    for (int j = i; j < NROW; j++){
+        Rcpp::NumericVector x1, x2;
+        if( i == 0){
+          if(j == 0){
+            x1 = y.row(i)/NROW + N;
+            x(i,Rcpp::_) = x2 = x1;
+          }
+          else{
+            x1 = x.row(i);
+            x2 = y.row(j)/NROW + N;
+            x(j,Rcpp::_) = x2;
+          }
+          Rcpp::NumericVector ss = 1 + Rcpp::abs(x2)/2  - 0.5*x2*x2;
+          second = Rcpp::algorithm::prod(ss.begin(), ss.end());
+        }
+        else{
+          x1 = x.row(i);
+          x2 = x.row(j);
+        }
+        Rcpp::NumericVector ff = 1 + 0.5*(Rcpp::abs(x1) + Rcpp::abs(x2) - Rcpp::abs(x1 - x2));
+        double first = Rcpp::algorithm::prod(ff.begin(), ff.end());
+      if(i==0) second_term += second;
+      first_term += ((i != j) + 1) * first;
+    }
+  }
+  return first_term / (NROW * NROW) - 2 * second_term / NROW + pow(13.0/12, NCOL);
+}
+
+
+
+double C_CD(const double * x, int NROW, int NCOL, double  * y){
+  double N = 0.5/NROW - 0.5;
+  double first_term = 0, second_term = 0;
+  for (int i = 0; i < NROW; i++){
+    for (int j = i; j < NROW; j++){
+      double first = 1;
+      double  second = 1;
+      for (int k = 0; k < NCOL; k++){
+        double x1, x2;
+        if( i == 0){
+          if(j == 0){
+            x1 = x[i*NCOL + k]/NROW + N;
+            y[i*NCOL + k] = x2 = x1;
+          }
+          else{
+            x1 = y[i*NCOL + k];
+            x2 = x[j*NCOL + k]/NROW + N;
+            y[j*NCOL + k] = x2;
+          }
+          second *= 1 + fabs(x2)/2  - 0.5*x2*x2;
+        }
+        else{
+          x1 = y[i * NCOL + k];
+          x2 = y[j * NCOL + k];
+        }
+        first *= 1 + 0.5*(fabs(x1) + fabs(x2) - fabs(x1 - x2));
+      }
+      if(i==0) second_term += second;
+      first_term += ((i != j) + 1) * first;
+    }
+
+  }
+  return first_term / (NROW * NROW) - 2 * second_term / NROW + pow(13.0/12, NCOL);
+}
+
+//' Centered L2 discrepancy using C-->C++
+//' The vector x is read in rowwise rather than columnwise.
+//' To Obtain the correct values, you should transpose the matrix
+//' @param x The design matrix D
+//' @name CD2
+//' @export
+// [[Rcpp::export]]
+double CD2(const Rcpp::NumericMatrix &x){
+
+  int NCOL = x.nrow();
+  int NROW = x.ncol();
+  if(NCOL>=NROW)
+    throw std::range_error("Number of columns more than rows. Probably transpose?");
+  Rcpp::NumericVector y(x.size());
+  return C_CD(x.begin(), NROW, NCOL, y.begin());
+}
+
+
+void C_construct(int n, double * out){
+	for(int i = 1; i <= n; i++)
+		for(int j = 1; j<n; j++, out++)
+			*out = i*j % n;
+};
+
+//' Construct N x (N - 1) good lattice points
+//'
+//' @name construct
+//' @param n Number of rows for the final design. SHOULD BE PRIME
+//' @return design d with n rows, n levels, n - 1 columns
+//' @export
+//[[Rcpp::export]]
+Rcpp::NumericMatrix construct(int n){
+	if(!is_prime(n))Rcpp::stop("n is not a prime number");
+	Rcpp::NumericMatrix out(n, n-1);
+	for(int i = 1; i <= n; i++)
+		for(int j = 1; j<n; j++)
+			out(i-1, j-1) = (i*j) % n;
+	return out;
+}
+
+
+Rcpp::NumericMatrix get_cols(
+    Rcpp::NumericMatrix x, Rcpp::IntegerVector y) {
+  unsigned int n_cols_out = y.size();
+  Rcpp::NumericMatrix out = Rcpp::no_init(x.nrow(), n_cols_out);
+  for(unsigned int z = 0; z < n_cols_out; ++z)
+    out(Rcpp::_, z) = x(Rcpp::_, y[z]);
+  return out;
+}
+
+Rcpp::NumericMatrix get_rows(
+  Rcpp::NumericMatrix x, Rcpp::IntegerVector y) {
+  unsigned int n_rows_out = y.size();
+  Rcpp::NumericMatrix out = Rcpp::no_init(n_rows_out, x.ncol());
+  for(unsigned int z = 0; z < n_rows_out; ++z)
+    out(z, Rcpp::_) = x(y[z], Rcpp::_);
+
+  return out;
+}
+
+
+template <typename T, typename Lambda>
+void combn(int n, int m, Lambda&& FUN, T &out){
+
+  int e = 0,  h = m;
+  Rcpp::IntegerVector a = Rcpp::seq_len(m);
+  out[0] = FUN(a-1);
+
+  if (m > 0){
+    int i = 2;
+    int nmmp1 = n - m + 1;
+    while (a[0] != nmmp1){
+      if (e < n - h){
+        h = 1;
+        e = a[m-1] ;
+        a[m - h] = e + 1;
+      }
+      else{
+        e = a[m - h - 1] ;
+        h += 1;
+        for (int j = 1; j <=h;j++) a[m - h + j-1] = e + j;
+      }
+      out[i-1]  = FUN(a-1);
+      i += 1;
+    }
+  }
+}
+
+template <typename Lambda, typename Reduce>
+double combn(int n, int m, Lambda&& FUN, Reduce&& reduce_fun){
+
+  int e = 0,  h = m;
+  Rcpp::IntegerVector a = Rcpp::seq_len(m);
+  double out = FUN(a-1);
+
+  if (m > 0){
+    int i = 2;
+    int nmmp1 = n - m + 1;
+    while (a[0] != nmmp1){
+      if (e < n - h){
+        h = 1;
+        e = a[m-1] ;
+        a[m - h] = e + 1;
+      }
+      else{
+        e = a[m - h - 1] ;
+        h += 1;
+        for (int j = 1; j <=h;j++) a[m - h + j-1] = e + j;
+      }
+      out  = reduce_fun(out, FUN(a-1));
+      i += 1;
+    }
+  }
+  return out;
+}
+
+
+
+
+
+//' Compute phi value for design D . Check equation 3.1 Uniform Projection
+//' Designs paper combn + mean.
+//' 
+//' @name phi 
+//' @param x input design D
+//' @param k number of dimensions to be projected onto
+//' @export
+// [[Rcpp::export]]
+double phi(const Rcpp::NumericMatrix &x, int k = 2){
+  int n = x.ncol();
+  Rcpp::NumericVector out((int)R::choose(n, k));
+  combn(n, k, [=](auto i){return CD(get_cols(x, i));}, out);
+  return Rcpp::mean(out);
+}
+
+//' Used Combn + reduce function.
+//' 
+//' @param x the design matrix x
+//' @param k the number of dimensions to be projected onto.
+//' @name phi2
+//' @export
+// [[Rcpp::export]]
+double phi2(const Rcpp::NumericMatrix &x, int k = 2){
+  int n = x.ncol();
+  return combn(n, k, [=](auto i){return CD(get_cols(x, i));},
+               std::plus<double>())/R::choose(n, k);
+}
+
+//' Used while loop.
+//' @name phi3
+//' @param x the design matrix d
+//' @param k the number of dimensions to be projected onto.
+//' @export
+// [[Rcpp::export]]
+
+double phi3(const Rcpp::NumericMatrix &x, int k = 2){
+  int n = x.ncol();
+  int e = 0,  h = k;
+  Rcpp::IntegerVector a = Rcpp::seq_len(k);
+  double out = CD(get_cols(x, a-1));
+
+  if (k > 0){
+    int i = 2;
+    int nmmp1 = n - k + 1;
+    while (a[0] != nmmp1){
+      if (e < n - h){
+        h = 1;
+        e = a[k - 1] ;
+        a[k - h] = e + 1;
+      }
+      else{
+        e = a[k - h - 1] ;
+        h += 1;
+        for (int j = 1; j <=h;j++) a[k - h + j-1] = e + j;
+      }
+      out += CD(get_cols(x, a-1));
+      i += 1;
+    }
+  }
+  return out/R::choose(n, k);
+}
+
+
+
+
+//' Compute phi value for design D . Check equation 3.1 Uniform Projection
+//' Designs paper
+//' 
+//' Assumes we are only interested in 2d projection
+//' 
+//' @name phi2D
+//' @param x input design D
+//' @param s The level for the design matrix D
+//' @export
+// [[Rcpp::export]]
+double phi2D(const Rcpp::NumericMatrix &x, int s = 0){
+  int NROW = x.nrow();
+	s = s > 0 ? s:NROW;
+  int NCOL =x.ncol();
+  double dist = 0;
+  double dist_row = 0;
+  Rcpp::NumericVector v(NROW);
+  for (int i = 0; i < NROW; i++){
+    for (int j = i+1; j < NROW; j++){
+      Rcpp::NumericVector a = Rcpp::abs(x.row(i) - x.row(j));
+      double d =  sum(a);
+      dist += 2*d*d;
+      v[j] += d;
+      v[i] += d;
+    }
+    dist_row += v[i]*v[i];
+  }
+  double p = pow(s, 4);
+  double g = dist - 2*dist_row/NROW;
+  double numerator = 4*(5*NCOL - 2)*p +
+               30*(3*NCOL-5)*pow(s,2) + 15*NCOL + 33;
+  double denom = 720*(NCOL - 1)*p;
+  double C = numerator/ denom + (1 + pow(-1,s))/(64*p);
+  double denom_g = 4*NCOL * (NCOL - 1) * NROW*NROW*s*s;
+
+  return g/denom_g +C;
+}
+
+
+//' Computes the phi efficiency.
+//' @name phi efficiency
+//' @param x Design matrix x
+//' @export
+// [[Rcpp::export]]
+double phiEff(const Rcpp::NumericMatrix &x){
+  int n  = x.nrow(), m = x.ncol();
+  int s  =  n;
+  double LB_num = 5*m*(4*pow(s,4)+2*(13*n-17)*pow(s,2)-n-5) -
+    (n-1)*(8*pow(s,4)+150*pow(s,2)-33);
+  double LB =  LB_num/(720*(m-1)*(n-1)*pow(s,4)) +
+                       (1 + pow(-1,s))/(64*pow(s,4));
+  return LB/phi2D(x, s);
+}
+
+//' Computes psi -- combn fn
+//' @export
+//' @name psi
+//' @param x Design matrix x 
+// [[Rcpp::export]]
+double psi(const Rcpp::NumericMatrix &x){
+  int n = x.nrow();
+  return pow(combn(n, 2, [=](auto i){
+    Rcpp::NumericVector out = x.row(i[1]) - x.row(i[0]);
+    out = out*out;
+    return 1/Rcpp::algorithm::prod(out.begin(), out.end());},
+    [](double a, double b){return a+b;})/R::choose(n, 2), 1.0/x.ncol());
+}
+
+//' Computes psi -- double for loop
+//'  @name psi2
+//' @param x Design matrix x 
+//' @export
+// [[Rcpp::export]]
+double psi2(const Rcpp::NumericMatrix x){
+  int NROW = x.nrow();
+  double sum = 0;
+  for (int i = 0; i < (NROW - 1); i++){
+    for (int j = i+1; j < NROW; j++){
+      Rcpp::NumericVector a = x.row(i) - x.row(j);
+      a = a * a;
+      sum += 1/Rcpp::algorithm::prod(a.begin(),a.end());
+    }
+  }
+  return pow(2*sum/(NROW*(NROW-1)), 1.0/x.ncol());
+}
+
+//' Computes Design + b (mod) 2
+//'	@name Db
+//'	@param x input design 
+//'	@param b integer to add
+//'	@export
+//[[Rcpp::export]]
+Rcpp::IntegerVector Db(const Rcpp::IntegerMatrix & x, int b){
+	int NROW = x.nrow();
+	Rcpp::IntegerVector out = Rcpp::sapply(x, [=](auto a){return (a + b) % NROW;});
+	out.attr("dim") = Rcpp::Dimension(NROW, x.ncol());
+	return out;
+}
+
+//' Computes William transformation of Db
+//'	@name Eb
+//'	@param x input design 
+//'	@param b integer to add
+//'	@export
+//[[Rcpp::export]]
+ Rcpp::IntegerVector Eb(const Rcpp::IntegerMatrix & x, int b){
+ 	int NROW = x.nrow();
+ 	auto f = [=](int a){
+ 		a = (a + b) % NROW;
+ 		int I =  (0 <= a) & (a < 0.5*NROW);
+ 		return 2*(a)*(2*I - 1) + (2*NROW - 1)*(1 - I);};
+ 	Rcpp::IntegerVector out = Rcpp::sapply(x, f);
+ 	out.attr("dim") = Rcpp::Dimension(NROW, x.ncol());
+ 	return out;
+ }
+
+//' Computes William transformation of Db
+//'	@name Eb2
+//'	@param x input design 
+//'	@param b integer to add
+//'	@export
+//[[Rcpp::export]]
+Rcpp::IntegerVector Eb2(const Rcpp::IntegerMatrix & x, int b){
+	const Rcpp::IntegerMatrix out(Db(x, b));
+	return William(out);
+}
+
+

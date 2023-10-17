@@ -86,7 +86,7 @@ construct <- function(n) {
 #' @param x input design D
 #' @param k number of dimensions to be projected onto
 #' @export
-phi <- function(x, k) {
+phi <- function(x, k = 2L) {
     .Call(`_UniformPro_phi`, x, k)
 }
 
@@ -96,7 +96,7 @@ phi <- function(x, k) {
 #' @param k the number of dimensions to be projected onto.
 #' @name phi2
 #' @export
-phi2 <- function(x, k) {
+phi2 <- function(x, k = 2L) {
     .Call(`_UniformPro_phi2`, x, k)
 }
 
@@ -105,7 +105,7 @@ phi2 <- function(x, k) {
 #' @param x the design matrix d
 #' @param k the number of dimensions to be projected onto.
 #' @export
-phi3 <- function(x, k) {
+phi3 <- function(x, k = 2L) {
     .Call(`_UniformPro_phi3`, x, k)
 }
 
@@ -118,7 +118,7 @@ phi3 <- function(x, k) {
 #' @param x input design D
 #' @param s The level for the design matrix D
 #' @export
-phi2D <- function(x, s) {
+phi2D <- function(x, s = 0L) {
     .Call(`_UniformPro_phi2D`, x, s)
 }
 
@@ -144,5 +144,32 @@ psi <- function(x) {
 #' @export
 psi2 <- function(x) {
     .Call(`_UniformPro_psi2`, x)
+}
+
+#' Computes Design + b (mod) 2
+#'	@name Db
+#'	@param x input design 
+#'	@param b integer to add
+#'	@export
+Db <- function(x, b) {
+    .Call(`_UniformPro_Db`, x, b)
+}
+
+#' Computes William transformation of Db
+#'	@name Eb
+#'	@param x input design 
+#'	@param b integer to add
+#'	@export
+Eb <- function(x, b) {
+    .Call(`_UniformPro_Eb`, x, b)
+}
+
+#' Computes William transformation of Db
+#'	@name Eb2
+#'	@param x input design 
+#'	@param b integer to add
+#'	@export
+Eb2 <- function(x, b) {
+    .Call(`_UniformPro_Eb2`, x, b)
 }
 

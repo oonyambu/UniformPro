@@ -656,6 +656,10 @@
 # define __DEC128_EPSILON__ 1E-33DL
 #endif
 
+#ifndef __FLT16_DECIMAL_DIG__
+# define __FLT16_DECIMAL_DIG__ 5
+#endif
+
 #ifndef __SSE2_MATH__
 # define __SSE2_MATH__ 1
 #endif
@@ -1858,10 +1862,6 @@
 
 #ifndef __GCC_ATOMIC_SHORT_LOCK_FREE
 # define __GCC_ATOMIC_SHORT_LOCK_FREE 2
-#endif
-
-#ifndef __FLT16_DECIMAL_DIG__
-# define __FLT16_DECIMAL_DIG__ 5
 #endif
 
 #ifndef __SIZE_MAX__

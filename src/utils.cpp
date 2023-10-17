@@ -122,7 +122,6 @@ double d2(const Rcpp::NumericMatrix &x){
 // [[Rcpp::export]]
 double rho_ave(const Rcpp::NumericMatrix &x){
   int NCOL = x.ncol(), NROW = x.nrow();
-  if(!is_prime(NROW)) return -1;
   double mean = (double)NROW*0.5 - 0.5;
   double n = mean - 0.5;
   double var =  (n + 1) * (2*n + 1) * (2*n + 3) / 6;
@@ -340,7 +339,7 @@ double combn(int n, int m, Lambda&& FUN, Reduce&& reduce_fun){
 //' @param k number of dimensions to be projected onto
 //' @export
 // [[Rcpp::export]]
-double phi(const Rcpp::NumericMatrix &x, int k){
+double phi(const Rcpp::NumericMatrix &x, int k = 2){
   int n = x.ncol();
   Rcpp::NumericVector out((int)R::choose(n, k));
   combn(n, k, [=](auto i){return CD(get_cols(x, i));}, out);
@@ -354,7 +353,7 @@ double phi(const Rcpp::NumericMatrix &x, int k){
 //' @name phi2
 //' @export
 // [[Rcpp::export]]
-double phi2(const Rcpp::NumericMatrix &x, int k){
+double phi2(const Rcpp::NumericMatrix &x, int k = 2){
   int n = x.ncol();
   return combn(n, k, [=](auto i){return CD(get_cols(x, i));},
                std::plus<double>())/R::choose(n, k);
@@ -367,7 +366,7 @@ double phi2(const Rcpp::NumericMatrix &x, int k){
 //' @export
 // [[Rcpp::export]]
 
-double phi3(const Rcpp::NumericMatrix &x, int k){
+double phi3(const Rcpp::NumericMatrix &x, int k = 2){
   int n = x.ncol();
   int e = 0,  h = k;
   Rcpp::IntegerVector a = Rcpp::seq_len(k);
@@ -407,8 +406,9 @@ double phi3(const Rcpp::NumericMatrix &x, int k){
 //' @param s The level for the design matrix D
 //' @export
 // [[Rcpp::export]]
-double phi2D(const Rcpp::NumericMatrix &x, int s){
+double phi2D(const Rcpp::NumericMatrix &x, int s = 0){
   int NROW = x.nrow();
+	s = s > 0 ? s:NROW;
   int NCOL =x.ncol();
   double dist = 0;
   double dist_row = 0;
@@ -481,4 +481,46 @@ double psi2(const Rcpp::NumericMatrix x){
   }
   return pow(2*sum/(NROW*(NROW-1)), 1.0/x.ncol());
 }
+
+//' Computes Design + b (mod) 2
+//'	@name Db
+//'	@param x input design 
+//'	@param b integer to add
+//'	@export
+//[[Rcpp::export]]
+Rcpp::IntegerVector Db(const Rcpp::IntegerMatrix & x, int b){
+	int NROW = x.nrow();
+	Rcpp::IntegerVector out = Rcpp::sapply(x, [=](auto a){return (a + b) % NROW;});
+	out.attr("dim") = Rcpp::Dimension(NROW, x.ncol());
+	return out;
+}
+
+//' Computes William transformation of Db
+//'	@name Eb
+//'	@param x input design 
+//'	@param b integer to add
+//'	@export
+//[[Rcpp::export]]
+ Rcpp::IntegerVector Eb(const Rcpp::IntegerMatrix & x, int b){
+ 	int NROW = x.nrow();
+ 	auto f = [=](int a){
+ 		a = (a + b) % NROW;
+ 		int I =  (0 <= a) & (a < 0.5*NROW);
+ 		return 2*(a)*(2*I - 1) + (2*NROW - 1)*(1 - I);};
+ 	Rcpp::IntegerVector out = Rcpp::sapply(x, f);
+ 	out.attr("dim") = Rcpp::Dimension(NROW, x.ncol());
+ 	return out;
+ }
+
+//' Computes William transformation of Db
+//'	@name Eb2
+//'	@param x input design 
+//'	@param b integer to add
+//'	@export
+//[[Rcpp::export]]
+Rcpp::IntegerVector Eb2(const Rcpp::IntegerMatrix & x, int b){
+	const Rcpp::IntegerMatrix out(Db(x, b));
+	return William(out);
+}
+
 

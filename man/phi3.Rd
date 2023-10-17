@@ -4,7 +4,7 @@
 \alias{phi3}
 \title{Used while loop.}
 \usage{
-phi3(x, k)
+phi3(x, k = 2L)
 }
 \arguments{
 \item{x}{the design matrix d}

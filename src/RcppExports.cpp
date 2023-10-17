@@ -180,6 +180,42 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// Db
+Rcpp::IntegerVector Db(const Rcpp::IntegerMatrix& x, int b);
+RcppExport SEXP _UniformPro_Db(SEXP xSEXP, SEXP bSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::IntegerMatrix& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type b(bSEXP);
+    rcpp_result_gen = Rcpp::wrap(Db(x, b));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Eb
+Rcpp::IntegerVector Eb(const Rcpp::IntegerMatrix& x, int b);
+RcppExport SEXP _UniformPro_Eb(SEXP xSEXP, SEXP bSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::IntegerMatrix& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type b(bSEXP);
+    rcpp_result_gen = Rcpp::wrap(Eb(x, b));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Eb2
+Rcpp::IntegerVector Eb2(const Rcpp::IntegerMatrix& x, int b);
+RcppExport SEXP _UniformPro_Eb2(SEXP xSEXP, SEXP bSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::IntegerMatrix& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type b(bSEXP);
+    rcpp_result_gen = Rcpp::wrap(Eb2(x, b));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_UniformPro_WilliamC", (DL_FUNC) &_UniformPro_WilliamC, 1},
@@ -197,6 +233,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_UniformPro_phiEff", (DL_FUNC) &_UniformPro_phiEff, 1},
     {"_UniformPro_psi", (DL_FUNC) &_UniformPro_psi, 1},
     {"_UniformPro_psi2", (DL_FUNC) &_UniformPro_psi2, 1},
+    {"_UniformPro_Db", (DL_FUNC) &_UniformPro_Db, 2},
+    {"_UniformPro_Eb", (DL_FUNC) &_UniformPro_Eb, 2},
+    {"_UniformPro_Eb2", (DL_FUNC) &_UniformPro_Eb2, 2},
     {NULL, NULL, 0}
 };
 
