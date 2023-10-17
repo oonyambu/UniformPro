@@ -1,0 +1,13 @@
+Package: UniformPro
+Type: Package
+Title: Uniform Project Designs Construction
+Version: 1.0
+Date: 2023-10-17
+Author: Onyambu Onyancha
+Maintainer: Onyambu Onyancha <oonyambu@gmail.com>
+Description: The package aims at the construction of optimal uniform projection designs efficiently
+License: GPL (>= 2)
+Imports: Rcpp (>= 1.0.11)
+LinkingTo: Rcpp
+RoxygenNote: 7.2.3
+Encoding: UTF-8

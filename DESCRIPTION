@@ -1,12 +1,11 @@
 Package: UniformPro
 Type: Package
-Title: What the Package Does in One 'Title Case' Line
+Title: Uniform Project Designs Construction
 Version: 1.0
 Date: 2023-10-17
-Author: Your Name
-Maintainer: Your Name <your@email.com>
-Description: One paragraph description of what the package does as one or more
-         full sentences.
+Author: Onyambu Onyancha
+Maintainer: Onyambu Onyancha <oonyambu@gmail.com>
+Description: The package aims at the construction of optimal uniform projection designs efficiently
 License: GPL (>= 2)
 Imports: Rcpp (>= 1.0.11)
 LinkingTo: Rcpp
